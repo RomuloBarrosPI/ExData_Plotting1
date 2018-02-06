@@ -1,8 +1,58 @@
-#-----------------------
-# SET PAR
-#-----------------------
+####################
+## Set parameters ##
+####################
 
 par(mfcol = c(2,2)) # 2 rows x 2 columns, column-wise filling
+
+#=================
+# Reading the data
+#=================
+
+require(dplyr)
+
+data <- read.csv("~/Downloads/household_power_consumption.txt",
+                 sep = ";",
+                 na.strings = "?",
+                 stringsAsFactors = FALSE
+)
+
+data$Date <- strptime(data$Date, "%d/%m/%Y")
+data$Date <- as.Date(data$Date)
+
+# Select only the 2880 observations where Date equals
+# February 01 and 02, 2007
+electric_consumption <- subset(
+        data,
+        Date == "2007-02-01" | Date == "2007-02-02"
+)
+
+rm(data) # free memory
+
+# Join date and time values together
+datetime <- paste(
+        electric_consumption$Date,
+        electric_consumption$Time
+)
+
+# Assign joined values of date and time to Date column
+electric_consumption$Date <- datetime
+
+rm(datetime) # free memory
+
+# Parse character as date type
+electric_consumption$Date <- strptime (
+        electric_consumption$Date,
+        "%Y-%m-%d %H:%M:%S"
+)
+
+# ... continuing...
+electric_consumption$Date <- as.Date(
+        electric_consumption$Date
+)
+
+#=================
+# Plotting
+#=================
 
 #-----------------------
 # PLOT 1 (TOP LEFT)
@@ -12,7 +62,7 @@ par(mfcol = c(2,2)) # 2 rows x 2 columns, column-wise filling
 # Main title = None
 # Xlab = none
 # Ylab = "Global Active Power (kilowatts)"
-# Variable(s) = electric_consumption$Global_active_power, electric_consumption$Date
+# Variable(s) = Global_active_power, Date
 
 with(electric_consumption, 
      plot(
@@ -29,7 +79,7 @@ with(electric_consumption,
 axis(
         1, # bottom
         at = c(0,1440,2880), # 1440 minutes in one day
-        labels = c("Thru", "Fri", "Sat")
+        labels = c("Thu", "Fri", "Sat")
 )
 
 #-----------------------
@@ -57,7 +107,7 @@ with(electric_consumption,
 axis(
         1, # bottom
         at = c(0,1440,2880), # 1440 minutes in one day
-        labels = c("Thru", "Fri", "Sat")
+        labels = c("Thu", "Fri", "Sat")
 )
 
 # Add lines for sub metering 2
@@ -113,7 +163,7 @@ with(electric_consumption,
 axis(
         1, # bottom
         at = c(0,1440,2880), # 1440 minutes in one day
-        labels = c("Thru", "Fri", "Sat")
+        labels = c("Thu", "Fri", "Sat")
 )
 
 #-----------------------
@@ -141,13 +191,21 @@ with(electric_consumption,
 axis(
         1, # bottom
         at = c(0,1440,2880), # 1440 minutes in one day
-        labels = c("Thru", "Fri", "Sat")
+        labels = c("Thu", "Fri", "Sat")
 )
 
-#-----------------------
-# CREATE FILE
-#-----------------------
+#==================
+# Printing the plot
+#==================
 
-dev.copy(png, "plot4.png") # copy the plot from screen to png device
+# copy the plot from screen to png device
+dev.copy(
+        png, # set the device
+        "plot4.png", # set the filename
+        width = 480, # set width
+        height = 480 # set height
+) 
 
 dev.off() # close the device
+
+rm(electric_consumption) # free memory
